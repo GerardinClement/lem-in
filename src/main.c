@@ -51,8 +51,8 @@ int main(int argc, char **argv)
     lem_in = parse_data(data);
     // display_data(&lem_in);
     algo_manager(&lem_in);
-    init_ants(&lem_in);
-    init_window(argc, argv, lem_in);
+    // init_ants(&lem_in);
+    // init_window(argc, argv, lem_in);
     
     free_lem_in(&lem_in);
     return (EXIT_SUCCESS);

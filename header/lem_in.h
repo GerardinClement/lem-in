@@ -18,6 +18,7 @@
 # include "free.h"
 # include "graphics.h"
 # include "algo.h"
+# include "queue.h"
 
 # define NUM_POINTS 100
 # include "ants.h"

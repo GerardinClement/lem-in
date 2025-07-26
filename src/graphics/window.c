@@ -224,7 +224,7 @@ void idle(void) {
 }
 
 void init_window(int argc, char **argv, t_lem_in lem_in) {
-    size_t timer = 1;
+    size_t timer = 0;
     g_lem_in = &lem_in;
 
     malloc_rooms_and_ants(lem_in.n_ants, lem_in.n_rooms);

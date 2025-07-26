@@ -46,7 +46,7 @@ void draw_hud(t_lem_in lem_in, int iterations)
 {
 	t_camera *camera = get_camera();
 	char buffer[50];
-	sprintf(buffer, "Nombre d'iterations: %d", iterations);
+	sprintf(buffer, "Nombre d'iterations: %d", iterations + 1);
 	render_text(10,  HEIGHT - (HEIGHT / 20), buffer);
 	if (camera->locked_on_ant) {
 		display_ant_info(lem_in.ants[camera->ant_followed]);

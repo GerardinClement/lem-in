@@ -39,21 +39,6 @@ static void    move_ants(t_lem_in *lem_in)
     ft_printf("\n");
 }
 
-// static void display_all_links(t_room *room, t_room **rooms_linked)
-// {
-//     size_t      i;
-//     size_t      links_len;
-
-//     i = 0;
-//     links_len = get_links_size(room->links);
-//     ft_printf("Room %s is linked to: \n", room->name);
-//     while (i < links_len)
-//     {
-//         ft_printf(" %s: %d\n", rooms_linked[i]->name, rooms_linked[i]->cost);
-//         i++;
-//     }
-//     ft_printf("\n-----------------\n");
-// }
 
 static t_room   *get_next_room(t_lem_in *lem_in, t_room *room)
 {

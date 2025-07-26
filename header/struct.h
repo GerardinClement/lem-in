@@ -32,6 +32,8 @@ typedef struct s_room
     int         *links;
     t_vector3   pos;
     int         cost;
+    int         visited;
+    int         ignored;
 }               t_room;
 
 typedef struct s_node
@@ -67,6 +69,7 @@ void insert_at_start(t_node **head, t_node *node);
 t_node *get_last_node(t_node *lst);
 size_t get_size_lst(t_node *lst);
 void display_lst(t_node *lst);
+
 
 
 #endif
