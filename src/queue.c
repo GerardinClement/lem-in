@@ -31,13 +31,12 @@ int enqueue(t_queue *queue, int data) {
     return 1; // Succès
 }
 
-int dequeue(t_queue *queue) {
+int dequeue(t_queue *queue, int *data_out) {
     if (!queue || queue->head == NULL) {
         return 0; // La file est vide
     }
 
     t_node_queue *temp = queue->head; // Nœud à supprimer
-    int data_out = temp->data;     // Récupère les données
 
     queue->head = queue->head->next; // La tête avance au nœud suivant
     if (queue->head == NULL) {        // Si la file devient vide après le dequeue
@@ -45,7 +44,8 @@ int dequeue(t_queue *queue) {
     }
     free(temp); // Libère la mémoire du nœud supprimé
     queue->size--;
-    return data_out; // Retourne les données du nœud supprimé
+    *data_out = temp->data; // Retourne les données du nœud supprimé
+    return 1; // Succès
 }
 
 int is_queue_empty(t_queue *queue) {

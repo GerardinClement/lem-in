@@ -45,8 +45,16 @@ typedef struct s_node
 typedef struct s_ant
 {
     int         id;
+    int         path_id;
     t_room      *room;
 }               t_ant;
+
+typedef struct s_path
+{
+    int         *path;
+    size_t      size;
+    int         distribution;
+}               t_path;
 
 
 typedef struct s_lem_in
@@ -56,6 +64,8 @@ typedef struct s_lem_in
     int         end;
     int         n_rooms;
     t_list      *path;
+    int         *all_paths_size;
+    t_path      *all_paths;
 
 
     t_room      *rooms;
