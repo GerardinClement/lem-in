@@ -24,6 +24,7 @@ SRC			 			= main.c \
 							graphics/camera.c\
 							graphics/hud.c\
 							display_data.c\
+							queue.c\
 							\
 							parsing/get_data.c\
 							parsing/parsing_utils.c\
