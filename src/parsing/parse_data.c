@@ -6,7 +6,12 @@ t_lem_in parse_data(t_array *data)
 {  
     t_lem_in    lem_in;
 
-    init_lem_in(&lem_in, data->arr);
+    if (!init_lem_in(&lem_in, data->arr))
+    {
+        printf("Init lemin error\n");
+        exit(1);
+    }
+
     parse_nb_ants(&lem_in, data);
     parse_rooms(&lem_in, data);
     parse_links(&lem_in, data);
@@ -25,7 +30,9 @@ static bool init_lem_in(t_lem_in *lem_in, char **data)
 
     lem_in->rooms = malloc(sizeof(t_room) * (count_n_rooms(data) + 1));
     if (!lem_in->rooms)
+    {
         return (false);
+    }
     
     return (true);
 }

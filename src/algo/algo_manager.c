@@ -13,19 +13,18 @@ void    algo_manager(t_lem_in *lem_in)
     calculate_all_rooms_cost(lem_in);
 }
 
-#include <stdio.h>
 
-static int compute_distribution(t_lem_in *lem_in) {
-    int T;
+static size_t compute_distribution(t_lem_in *lem_in) {
+    size_t T;
     int num_ants = lem_in->n_ants;
 
     // 1. Trouver la longueur minimale
-    T = lem_in->all_paths_size[0];
+    T = lem_in->all_paths[0].size;
     int nb_paths = 0;
 
-    for (int i = 0; lem_in->all_paths_size[i] != -1; i++) {
-        if (lem_in->all_paths_size[i] < T)
-            T = lem_in->all_paths_size[i];
+    for (int i = 0; i < lem_in->n_paths; i++) {
+        if (lem_in->all_paths[i].size < T)
+            T = lem_in->all_paths[i].size;
         nb_paths++;
     }
 
@@ -36,7 +35,7 @@ static int compute_distribution(t_lem_in *lem_in) {
         int total_capacity = 0;
 
         for (int i = 0; i < nb_paths; i++) {
-            capacities[i] = T - lem_in->all_paths_size[i] + 1;
+            capacities[i] = T - lem_in->all_paths[i].size + 1;
             if (capacities[i] < 0)
                 capacities[i] = 0;
             total_capacity += capacities[i];
@@ -64,39 +63,40 @@ static int compute_distribution(t_lem_in *lem_in) {
 }
 
 
-static int backtracking_path(t_lem_in *lem_in ,int *visited) {
+static void backtracking_path(t_lem_in *lem_in, int *visited, t_path *path) {
     int prev_node = visited[lem_in->end];
     int i = 0;
 
-    lem_in->rooms[prev_node].ignored = 1; // Mark the end room as ignored
+    lem_in->rooms[prev_node].ignored = 1;
     while (prev_node != START) {
         if (prev_node == NOT_VISITED) {
             print_error("No path found from start to end.\n");
-            return -1; // No path found
+            return;
         }
         int current_id = lem_in->rooms[prev_node].id;
         prev_node = visited[current_id];
         i++;
     }
-    int *path = malloc(sizeof(int) * (i + 1));
+    int *tmp_path = malloc(sizeof(int) * (i + 2));
     prev_node = visited[lem_in->end];
 
-    
-    for (int j = 0; j < i; j++)
+    tmp_path[0] = 1;
+    for (int j = 1; j < i; j++)
     {
-        path[j] = lem_in->rooms[prev_node].id;
-        prev_node = visited[path[j]];
+        tmp_path[j] = lem_in->rooms[prev_node].id;
+        prev_node = visited[tmp_path[j]];
     }
 
-    printf("Start: %d\n", lem_in->start);
-    printf("End: %d\n", lem_in->end);
+    // printf("Start: %d\n", lem_in->start);
+    // printf("End: %d\n", lem_in->end);
 
-    for (int j = i - 1; j >= 0; j--) 
-    {
-        printf("Room %d\n", path[j]);
-    }
-    printf("path size: %d\n", i);
-    return i;
+    // for (int j = i - 1; j >= 0; j--) 
+    // {
+    //     printf("Room %d\n", tmp_path[j]);
+    // }
+    // printf("path size: %d\n", i);
+    path->size = i;
+    path->path = tmp_path;
 }
 
 static void calculate_all_rooms_cost(t_lem_in *lem_in) 
@@ -104,55 +104,49 @@ static void calculate_all_rooms_cost(t_lem_in *lem_in)
     t_room *room;
     int *visited;
     lem_in->all_paths = malloc(sizeof(t_path) * lem_in->n_rooms);
-    lem_in->all_paths_size = malloc(sizeof(int) * lem_in->n_rooms);
-    if (!lem_in->all_paths_size) {
-        perror("Failed to allocate memory for all_paths_size");
-        exit(EXIT_FAILURE);
-    }
-
-    // init all_paths_size array
-    for (int index = 0; index < lem_in->n_rooms - 1; index++)
-    {
-        lem_in->all_paths_size[index] = 0;
-    }
-    lem_in->all_paths_size[lem_in->n_rooms - 1] = -1;
 
     int i = 0;
 
-    printf("DEBUG: Starting path search from start room id %p\n", lem_in->rooms);
-    printf("DEBUG: Number of rooms: %d\n", lem_in->n_rooms);
+    // printf("DEBUG1: Starting path search from start room id %p\n", &lem_in->rooms);
+    // printf("DEBUG2: Number of rooms: %d\n", lem_in->n_rooms);
+    // printf("DEBUG3: Start: %d\n", lem_in->start);
     room = &lem_in->rooms[lem_in->start];
-    printf("DEBUG: Starting path search from room id %d\n", room->id);
+    // printf("DEBUG4: Starting path search from room id %p\n", room);
     if (!lem_in->all_paths) {
         perror("Failed to allocate memory for all_paths");
-        free(lem_in->all_paths_size);
         exit(EXIT_FAILURE);
     }
     do {
-        printf("DEBUG: Starting path search from room id %d\n", room->id);
+        // printf("DEBUG5: Starting path search from room id %d\n", room->id);
         visited = reach_path(*lem_in, room);
         if (visited == NULL) {
-            printf("No path found from start to end.\n");
+            // printf("No path found from start to end.\n");
             break;
         }
-        lem_in->all_paths[i].size = backtracking_path(lem_in, visited);
-        printf("-----------------------------------------------------------\n");
-        lem_in->all_paths[i].path = visited;
+        backtracking_path(lem_in, visited, &lem_in->all_paths[i]);
+        // printf("-----------------------------------------------------------\n");
         i++;
-    } while (visited != NULL && i < 5);
+    } while (visited != NULL);
+    lem_in->n_paths = i;
     lem_in->all_paths[i].size = -1;
     int *distribution = malloc(sizeof(int) * i);
     if (!distribution) {
         perror("Failed to allocate memory for distribution");
         free(lem_in->all_paths);
-        free(lem_in->all_paths_size);
         exit(EXIT_FAILURE);
     }
-    int T = compute_distribution(lem_in);
-    printf("T = %d\n", T);
-    for (int j = 0; j < i; j++) {
-        printf("Path %d: size = %d, ants = %d\n", j, lem_in->all_paths_size[j], lem_in->all_paths[j].distribution);
-    }
+    compute_distribution(lem_in);
+    // printf("\n\nT = %ld\n\n", T);
+
+    // for (int i = 0; i < lem_in->n_paths; i++)
+    // {
+    //     printf("%ld et %d\n", lem_in->all_paths[i].size, lem_in->all_paths[i].distribution);
+    //     for (size_t j = 0; j < lem_in->all_paths[i].size; j++)
+    //     {
+    //         printf("%d\n", lem_in->all_paths[i].path[j]);
+    //     }
+    //     printf("------------------------------------\n");
+    // }
 
 }
 
@@ -189,7 +183,7 @@ static int *reach_path(t_lem_in lem_in, t_room *room)
         perror("Failed to allocate memory for visited array");
         exit(EXIT_FAILURE);
     }
-    printf("DEBUG: reach_path called for room id %d\n", room->id);
+    // printf("DEBUG: reach_path called for room id %d\n", room->id);
     init_visited(visited, lem_in.n_rooms);
     visited[lem_in.start] = START; // Mark the start room as visited
     target_node = lem_in.end;

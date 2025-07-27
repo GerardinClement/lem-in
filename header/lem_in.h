@@ -34,7 +34,7 @@ void        display_info_rooms_links(t_lem_in *lem_in);
 void        display_info_rooms_status(t_lem_in *lem_in);
 void        display_info_ants(t_lem_in *lem_in);
 
-int generate_random_number(int min, int max);
+int         generate_random_number(int min, int max);
 
 
 #endif

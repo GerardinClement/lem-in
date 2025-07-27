@@ -4,7 +4,6 @@ static bool     check_extension(char *filename);
 static bool     check_arguments(int argc, char *filename);
 
 
-
 static bool check_extension(char *filename)
 {
     int i;
@@ -35,6 +34,14 @@ static bool check_arguments(int argc, char *filename)
     return (true);
 }
 
+bool check_if_all_ants_in_end2(t_lem_in *lem_in) {
+    for (int i = 0; i < lem_in->n_ants; i++)
+    {
+        if (lem_in->ants[i].room->id != lem_in->end)
+            return false;
+    }
+    return true;
+}
 
 int main(int argc, char **argv)
 {
@@ -49,11 +56,14 @@ int main(int argc, char **argv)
     if (!data)
         return (EXIT_FAILURE);
     lem_in = parse_data(data);
+
     // display_data(&lem_in);
     algo_manager(&lem_in);
-    // init_ants(&lem_in);
-    // init_window(argc, argv, lem_in);
+    init_ants(&lem_in);
+    init_window(argc, argv, lem_in);
+    // while (!check_if_all_ants_in_end2(&lem_in))
+    //     move_ants_manager(&lem_in);
     
-    free_lem_in(&lem_in);
+    // free_lem_in(&lem_in);
     return (EXIT_SUCCESS);
 }

@@ -18,21 +18,23 @@ typedef struct s_camera {
 	bool		locked_on_ant;
 	int			ant_followed;
 	float		radius;
-}			t_camera;
+}				t_camera;
 
 typedef struct color {
-	float r;
-	float g;
-	float b;
-	float o;
-}			t_color;
+	float 		r;
+	float 		g;
+	float 		b;
+	float 		o;
+}				t_color;
+
 
 typedef struct s_sphere {
 	t_vector3	pos;
 	t_vector3	*links;
 	size_t		links_size;
 	t_color		color;
-}			t_sphere;
+}				t_sphere;
+
 
 void 		init_window(int argc, char **argv, t_lem_in lem_in);
 void 		special_keyboard_listener(int key, int x, int y);

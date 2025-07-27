@@ -46,6 +46,7 @@ typedef struct s_ant
 {
     int         id;
     int         path_id;
+    int         current_path_pos;
     t_room      *room;
 }               t_ant;
 
@@ -63,8 +64,7 @@ typedef struct s_lem_in
     int         start;
     int         end;
     int         n_rooms;
-    t_list      *path;
-    int         *all_paths_size;
+    int         n_paths;
     t_path      *all_paths;
 
 
@@ -73,13 +73,12 @@ typedef struct s_lem_in
 }               t_lem_in;
 
 
-void insert_node(t_node **head, t_node *node);
-t_node *create_node(t_room *room);
-void insert_at_start(t_node **head, t_node *node);
-t_node *get_last_node(t_node *lst);
-size_t get_size_lst(t_node *lst);
-void display_lst(t_node *lst);
-
+void            insert_node(t_node **head, t_node *node);
+t_node          *create_node(t_room *room);
+void            insert_at_start(t_node **head, t_node *node);
+t_node          *get_last_node(t_node *lst);
+size_t          get_size_lst(t_node *lst);
+void            display_lst(t_node *lst);
 
 
 #endif
