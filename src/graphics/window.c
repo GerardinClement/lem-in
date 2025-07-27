@@ -1,14 +1,17 @@
 #include "lem_in.h"
 #include <math.h>
 
-t_sphere *rooms;
-t_sphere *ants;
-t_lem_in *g_lem_in;
-int size = 0;
-int ants_size = 0;
-size_t iterations = 0;
-bool esc_is_pressed = false;
+t_sphere    *rooms;
+t_sphere    *ants;
+t_lem_in    *g_lem_in;
+size_t      iterations = 0;
+
+int         size = 0;
+int         ants_size = 0;
+bool        esc_is_pressed = false;
 bool        paused = false;
+float       g_window_speed = 0;
+
 
 static void     keyboard_listener(unsigned char key, int x, int y);
 static void     malloc_rooms_and_ants(int n_ants, int n_rooms);
@@ -224,7 +227,7 @@ void idle(void) {
 }
 
 void init_window(int argc, char **argv, t_lem_in lem_in) {
-    size_t timer = 0;
+    size_t timer = g_window_speed;
     g_lem_in = &lem_in;
 
     malloc_rooms_and_ants(lem_in.n_ants, lem_in.n_rooms);

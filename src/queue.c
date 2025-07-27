@@ -42,9 +42,9 @@ int dequeue(t_queue *queue, int *data_out) {
     if (queue->head == NULL) {        // Si la file devient vide après le dequeue
         queue->tail = NULL;           // La queue doit aussi être NULL
     }
-    free(temp); // Libère la mémoire du nœud supprimé
     queue->size--;
     *data_out = temp->data; // Retourne les données du nœud supprimé
+    free(temp); // Libère la mémoire du nœud supprimé
     return 1; // Succès
 }
 

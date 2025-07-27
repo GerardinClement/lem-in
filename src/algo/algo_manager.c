@@ -22,7 +22,8 @@ static int compute_distribution(t_lem_in *lem_in) {
     // 1. Trouver la longueur minimale
     T = lem_in->all_paths_size[0];
     int nb_paths = 0;
-    for (int i = 1; lem_in->all_paths_size[i] != -1; i++) {
+
+    for (int i = 0; lem_in->all_paths_size[i] != -1; i++) {
         if (lem_in->all_paths_size[i] < T)
             T = lem_in->all_paths_size[i];
         nb_paths++;
@@ -79,13 +80,19 @@ static int backtracking_path(t_lem_in *lem_in ,int *visited) {
     }
     int *path = malloc(sizeof(int) * (i + 1));
     prev_node = visited[lem_in->end];
-    for (int j = 0; j <= i; j++) {
+
+    
+    for (int j = 0; j < i; j++)
+    {
         path[j] = lem_in->rooms[prev_node].id;
         prev_node = visited[path[j]];
     }
+
     printf("Start: %d\n", lem_in->start);
     printf("End: %d\n", lem_in->end);
-    for (int j = i; j >= 0; j--) {
+
+    for (int j = i - 1; j >= 0; j--) 
+    {
         printf("Room %d\n", path[j]);
     }
     printf("path size: %d\n", i);
@@ -98,11 +105,18 @@ static void calculate_all_rooms_cost(t_lem_in *lem_in)
     int *visited;
     lem_in->all_paths = malloc(sizeof(t_path) * lem_in->n_rooms);
     lem_in->all_paths_size = malloc(sizeof(int) * lem_in->n_rooms);
-
     if (!lem_in->all_paths_size) {
         perror("Failed to allocate memory for all_paths_size");
         exit(EXIT_FAILURE);
     }
+
+    // init all_paths_size array
+    for (int index = 0; index < lem_in->n_rooms - 1; index++)
+    {
+        lem_in->all_paths_size[index] = 0;
+    }
+    lem_in->all_paths_size[lem_in->n_rooms - 1] = -1;
+
     int i = 0;
 
     printf("DEBUG: Starting path search from start room id %p\n", lem_in->rooms);
@@ -185,15 +199,15 @@ static int *reach_path(t_lem_in lem_in, t_room *room)
         free(visited);
         exit(EXIT_FAILURE);
     }
-
+    
     init_queue(queue);
     enqueue(queue, room->id);
     while (!is_queue_empty(queue)) {
         int ok = dequeue(queue, &current_node);
         if (!ok)
-            break;
+        break;
         if (current_node == target_node)
-            break;
+        break;
         look_neighbors(lem_in, &lem_in.rooms[current_node], visited, queue);
     }
     if (visited[target_node] == NOT_VISITED) {
