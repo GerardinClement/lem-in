@@ -60,10 +60,10 @@ int main(int argc, char **argv)
     // display_data(&lem_in);
     algo_manager(&lem_in);
     init_ants(&lem_in);
-    init_window(argc, argv, lem_in);
-    // while (!check_if_all_ants_in_end2(&lem_in))
-    //     move_ants_manager(&lem_in);
+    // init_window(argc, argv, lem_in);
+    while (!check_if_all_ants_in_end2(&lem_in))
+        move_ants_manager(&lem_in);
     
-    // free_lem_in(&lem_in);
+    free_lem_in(&lem_in);
     return (EXIT_SUCCESS);
 }

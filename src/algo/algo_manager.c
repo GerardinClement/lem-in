@@ -91,6 +91,8 @@ static void backtracking_path(t_lem_in *lem_in, int *visited, t_path *path) {
 
     path->size = i;
     path->path = tmp_path;
+
+    free(tmp_path);
 }
 
 static void calculate_all_rooms_cost(t_lem_in *lem_in) 
@@ -126,6 +128,7 @@ static void calculate_all_rooms_cost(t_lem_in *lem_in)
         free(lem_in->all_paths);
         exit(EXIT_FAILURE);
     }
+    free(distribution);
     compute_distribution(lem_in);
 }
 
@@ -138,6 +141,7 @@ static void look_neighbors(t_lem_in lem_in, t_room *room, int *visited, t_queue 
     for (i = 0; i < links_size; i++)
     {
         t_room neighbors = lem_in.rooms[room->links[i]];
+
         if (visited[room->links[i]] == NOT_VISITED && !neighbors.ignored) {
             visited[room->links[i]] = room->id;
             enqueue(queue, room->links[i]);
@@ -190,6 +194,9 @@ static int *reach_path(t_lem_in lem_in, t_room *room)
         free(queue);
         return NULL;
     }
+
+    free(queue);
+    free(visited);
     return visited;
 }
 

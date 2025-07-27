@@ -28,6 +28,8 @@ int enqueue(t_queue *queue, int data) {
         queue->tail = new_node;
     }
     queue->size++;
+    
+    free(new_node);
     return 1;
 }
 
