@@ -30,9 +30,7 @@ static bool init_lem_in(t_lem_in *lem_in, char **data)
 
     lem_in->rooms = malloc(sizeof(t_room) * (count_n_rooms(data) + 1));
     if (!lem_in->rooms)
-    {
         return (false);
-    }
     
     return (true);
 }

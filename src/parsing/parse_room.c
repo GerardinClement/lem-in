@@ -82,7 +82,6 @@ int count_n_rooms(char **data)
             n_rooms++;
         i++;
     }
-    // printf("N rooms = %d\n", n_rooms);
     return (n_rooms);
 }
 

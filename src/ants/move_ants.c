@@ -21,13 +21,9 @@ static void    move_ants(t_lem_in *lem_in)
     {
         if (ants[i].room->id == lem_in->end)
             continue;
-        // printf("Ant %d is in room %s\n", ants[i].id, ants[i].room->name);
         next_room = get_next_room(lem_in, &ants[i]);
         if (next_room->is_empty == false && next_room->id != lem_in->end)
-        {
-            // printf("Ant %d is blocked in room %s\n", ants[i].id, ants[i].room->name);
             continue;
-        }
         if (next_room->id == ants[i].room->id)
             continue;
         ants[i].room->is_empty = true;
@@ -42,11 +38,10 @@ static void    move_ants(t_lem_in *lem_in)
 
 static t_room   *get_next_room(t_lem_in *lem_in, t_ant *ant)
 {
-    t_path  path = lem_in->all_paths[ant->path_id];
-    int     next_room_id = path.path[ant->current_path_pos - 1];
-    t_room  *next_room = &lem_in->rooms[next_room_id];
+    t_path      path = lem_in->all_paths[ant->path_id];
+    int         next_room_id = path.path[ant->current_path_pos - 1];
+    t_room      *next_room = &lem_in->rooms[next_room_id];
 
-    // printf("next_room id: %d\n", next_room->id);
     return next_room;
 }
 

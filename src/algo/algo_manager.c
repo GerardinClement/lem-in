@@ -64,8 +64,8 @@ static size_t compute_distribution(t_lem_in *lem_in) {
 
 
 static void backtracking_path(t_lem_in *lem_in, int *visited, t_path *path) {
-    int prev_node = visited[lem_in->end];
-    int i = 0;
+    int     prev_node = visited[lem_in->end];
+    int     i = 0;
 
     lem_in->rooms[prev_node].ignored = 1;
     while (prev_node != START) {
@@ -77,7 +77,9 @@ static void backtracking_path(t_lem_in *lem_in, int *visited, t_path *path) {
         prev_node = visited[current_id];
         i++;
     }
-    int *tmp_path = malloc(sizeof(int) * (i + 2));
+
+    int     *tmp_path = malloc(sizeof(int) * (i + 2));
+
     prev_node = visited[lem_in->end];
 
     tmp_path[0] = 1;
@@ -87,67 +89,44 @@ static void backtracking_path(t_lem_in *lem_in, int *visited, t_path *path) {
         prev_node = visited[tmp_path[j]];
     }
 
-    // printf("Start: %d\n", lem_in->start);
-    // printf("End: %d\n", lem_in->end);
-
-    // for (int j = i - 1; j >= 0; j--) 
-    // {
-    //     printf("Room %d\n", tmp_path[j]);
-    // }
-    // printf("path size: %d\n", i);
     path->size = i;
     path->path = tmp_path;
 }
 
 static void calculate_all_rooms_cost(t_lem_in *lem_in) 
 {
-    t_room *room;
-    int *visited;
+    t_room      *room;
+    int         i = 0;
+    int         *visited;
+
     lem_in->all_paths = malloc(sizeof(t_path) * lem_in->n_rooms);
 
-    int i = 0;
-
-    // printf("DEBUG1: Starting path search from start room id %p\n", &lem_in->rooms);
-    // printf("DEBUG2: Number of rooms: %d\n", lem_in->n_rooms);
-    // printf("DEBUG3: Start: %d\n", lem_in->start);
     room = &lem_in->rooms[lem_in->start];
-    // printf("DEBUG4: Starting path search from room id %p\n", room);
     if (!lem_in->all_paths) {
         perror("Failed to allocate memory for all_paths");
         exit(EXIT_FAILURE);
     }
     do {
-        // printf("DEBUG5: Starting path search from room id %d\n", room->id);
         visited = reach_path(*lem_in, room);
         if (visited == NULL) {
-            // printf("No path found from start to end.\n");
+            printf("No path found from start to end.\n");
             break;
         }
         backtracking_path(lem_in, visited, &lem_in->all_paths[i]);
-        // printf("-----------------------------------------------------------\n");
         i++;
     } while (visited != NULL);
+
     lem_in->n_paths = i;
     lem_in->all_paths[i].size = -1;
-    int *distribution = malloc(sizeof(int) * i);
+
+    int     *distribution = malloc(sizeof(int) * i);
+
     if (!distribution) {
         perror("Failed to allocate memory for distribution");
         free(lem_in->all_paths);
         exit(EXIT_FAILURE);
     }
     compute_distribution(lem_in);
-    // printf("\n\nT = %ld\n\n", T);
-
-    // for (int i = 0; i < lem_in->n_paths; i++)
-    // {
-    //     printf("%ld et %d\n", lem_in->all_paths[i].size, lem_in->all_paths[i].distribution);
-    //     for (size_t j = 0; j < lem_in->all_paths[i].size; j++)
-    //     {
-    //         printf("%d\n", lem_in->all_paths[i].path[j]);
-    //     }
-    //     printf("------------------------------------\n");
-    // }
-
 }
 
 static void look_neighbors(t_lem_in lem_in, t_room *room, int *visited, t_queue *queue)
@@ -174,20 +153,21 @@ static void init_visited(int *visited, int n_rooms)
 
 static int *reach_path(t_lem_in lem_in, t_room *room)
 {
-    t_queue *queue;
-    int *visited = malloc(sizeof(int) * lem_in.n_rooms);
-    int current_node;
-    int target_node;
+    t_queue     *queue;
+    int         *visited = malloc(sizeof(int) * lem_in.n_rooms);
+    int         current_node;
+    int         target_node;
 
     if (!visited) {
         perror("Failed to allocate memory for visited array");
         exit(EXIT_FAILURE);
     }
-    // printf("DEBUG: reach_path called for room id %d\n", room->id);
+
     init_visited(visited, lem_in.n_rooms);
-    visited[lem_in.start] = START; // Mark the start room as visited
+    visited[lem_in.start] = START;
     target_node = lem_in.end;
     queue = malloc(sizeof(t_queue));
+
     if (!queue) {
         perror("Failed to allocate memory for queue");
         free(visited);
@@ -196,6 +176,7 @@ static int *reach_path(t_lem_in lem_in, t_room *room)
     
     init_queue(queue);
     enqueue(queue, room->id);
+
     while (!is_queue_empty(queue)) {
         int ok = dequeue(queue, &current_node);
         if (!ok)
@@ -207,7 +188,7 @@ static int *reach_path(t_lem_in lem_in, t_room *room)
     if (visited[target_node] == NOT_VISITED) {
         free(visited);
         free(queue);
-        return NULL; // No path found
+        return NULL;
     }
     return visited;
 }
