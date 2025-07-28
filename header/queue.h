@@ -17,6 +17,7 @@ void                init_queue(t_queue *queue);
 int                 enqueue(t_queue *queue, int data);
 int                 dequeue(t_queue *queue, int *data_out);
 int                 is_queue_empty(t_queue *queue);
+void                destroy_queue(t_queue *queue);
 
 
 #endif

@@ -15,6 +15,9 @@ t_lem_in parse_data(t_array *data)
     parse_nb_ants(&lem_in, data);
     parse_rooms(&lem_in, data);
     parse_links(&lem_in, data);
+    // for (int i = 0; i < lem_in.n_rooms; i++) {
+    //     printf("room %d link:%d\n", lem_in.rooms[i].id, lem_in.rooms[i].links[0]);
+    // }
     free_array(data);
     free(data);
     return (lem_in);

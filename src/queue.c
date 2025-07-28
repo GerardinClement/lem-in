@@ -28,8 +28,7 @@ int enqueue(t_queue *queue, int data) {
         queue->tail = new_node;
     }
     queue->size++;
-    
-    free(new_node);
+        
     return 1;
 }
 
@@ -45,13 +44,14 @@ int dequeue(t_queue *queue, int *data_out) {
         queue->tail = NULL;
     }
     queue->size--;
+    
     *data_out = temp->data;
     free(temp);
     return 1;
 }
 
 int is_queue_empty(t_queue *queue) {
-    return (queue == NULL || queue->head == NULL);
+    return (!queue || queue->head == NULL);
 }
 
 int queue_size(t_queue *queue) {

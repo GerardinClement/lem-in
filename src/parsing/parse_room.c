@@ -121,3 +121,4 @@ void parse_rooms(t_lem_in *lem_in, t_array *data)
         fatal_errors_handler(lem_in, "No start or end room found.\n", data);
     lem_in->rooms[id].id = -1;
 }
+
