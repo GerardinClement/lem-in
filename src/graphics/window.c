@@ -10,7 +10,7 @@ int         size = 0;
 int         ants_size = 0;
 bool        esc_is_pressed = false;
 bool        paused = false;
-float       g_window_speed = 0;
+float       g_window_speed = 1;
 
 
 static void     keyboard_listener(unsigned char key, int x, int y);
@@ -71,22 +71,47 @@ t_color interpolate_color(t_color color1, t_color color2, float factor) {
 }
 
 void init_rooms(t_lem_in lem_in) {
-    int i;
-
-    for (i = 0; i < lem_in.n_rooms; i++) {
+    size = lem_in.n_rooms;
+    t_color path_colors[5] = {
+        (t_color){0.0, 0.0, 1.0, 1.0}, // Blue
+        (t_color){1.0, 0.5, 0.0, 1.0}, // Orange
+        (t_color){1.0, 0.0, 1.0, 1.0}, // Magenta
+        (t_color){0.5, 1.0, 0.5, 1.0}, // Light Green
+        (t_color){1.0, 1.0, 0.5, 1.0}  // Yellow
+    };
+    int n_colors = sizeof(path_colors) / sizeof(path_colors[0]);
+    for (int i = 0; i < lem_in.n_rooms; i++) {
         rooms[i].pos.x = lem_in.rooms[i].pos.x;
         rooms[i].pos.y = lem_in.rooms[i].pos.y;
         rooms[i].pos.z = lem_in.rooms[i].pos.z;
-        if (i == lem_in.end)
-            rooms[i].color = (t_color){1.0, 0.0, 0.0, 1.0};
-        else if (i == lem_in.start)
-            rooms[i].color = (t_color){0.0, 1.0, 0.0, 1.0};
-        else
-            rooms[i].color = interpolate_color((t_color){1.0, 1.0, 1.0, 1.0}, (t_color){1.0, 1.0, 0.0, 1.0}, lem_in.rooms[i].cost / (float)lem_in.n_rooms);
         rooms[i].links_size = get_links_size(lem_in.rooms[i].links);
         rooms[i].links = get_links(lem_in, lem_in.rooms[i].links, rooms[i].links_size);
+
+        // Start et End gardent leur couleur spéciale
+        if (i == lem_in.end) {
+            rooms[i].color = (t_color){1.0, 0.0, 0.0, 1.0};
+            continue;
+        } else if (i == lem_in.start) {
+            rooms[i].color = (t_color){0.0, 1.0, 0.0, 1.0};
+            continue;
+        }
+
+        // Cherche si la room appartient à un path
+        int found = 0;
+        for (int p = 0; p < lem_in.n_paths; p++) {
+            for (size_t j = 0; j < lem_in.all_paths[p].size; j++) {
+                if (lem_in.all_paths[p].path[j] == i) {
+                    rooms[i].color = path_colors[p % n_colors];
+                    found = 1;
+                    break;
+                }
+            }
+            if (found) break;
+        }
+        // Si la room n'est dans aucun path, couleur grise
+        if (!found)
+            rooms[i].color = (t_color){0.5, 0.5, 0.5, 1.0};
     }
-    size = lem_in.n_rooms;
 }
 
 void init_ants_sphere(t_lem_in lem_in) {
@@ -111,7 +136,6 @@ bool check_if_all_ants_in_end(t_lem_in *lem_in) {
 
 void update(int value) 
 {
-    float   speed;
     int     count = 0;
 
     if (paused) {
@@ -123,12 +147,12 @@ void update(int value)
         t_room room = *g_lem_in->ants[i].room;
         t_vector3 dir = {room.pos.x - ants[i].pos.x, room.pos.y - ants[i].pos.y, room.pos.z - ants[i].pos.z};
         float length = sqrt(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);
-        speed = length / 25;
         if (length > 0.1f)
         {
-            ants[i].pos.x += dir.x / length * speed;
-            ants[i].pos.y += dir.y / length * speed;
-            ants[i].pos.z += dir.z / length * speed;
+            float factor = 0.15f;
+            ants[i].pos.x += (room.pos.x - ants[i].pos.x) * factor;
+            ants[i].pos.y += (room.pos.y - ants[i].pos.y) * factor;
+            ants[i].pos.z += (room.pos.z - ants[i].pos.z) * factor;
         }
         else {
             ants[i].pos = room.pos;
@@ -137,7 +161,6 @@ void update(int value)
     }
     if (count == ants_size) {
         if (check_if_all_ants_in_end(g_lem_in)) {
-            // printf("All ants are in end with %ld iterations\n", iterations);
             return;
         }
         move_ants_manager(g_lem_in);

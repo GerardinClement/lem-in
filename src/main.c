@@ -1,7 +1,6 @@
 #include "lem_in.h"
 
 static bool     check_extension(char *filename);
-static bool     check_arguments(int argc, char *filename);
 
 
 static bool check_extension(char *filename)
@@ -22,18 +21,6 @@ static bool check_extension(char *filename)
     return (true);
 }
 
-static bool check_arguments(int argc, char *filename)
-{
-    if (argc != 2)
-    {
-        print_error("Usage: ./lem-in [file].\n");
-        return (false);
-    }
-    if (!check_extension(filename))
-        return (false);
-    return (true);
-}
-
 bool check_if_all_ants_in_end2(t_lem_in *lem_in) {
     for (int i = 0; i < lem_in->n_ants; i++)
     {
@@ -43,27 +30,52 @@ bool check_if_all_ants_in_end2(t_lem_in *lem_in) {
     return true;
 }
 
+
+
+
 int main(int argc, char **argv)
 {
     t_array *data;
     t_lem_in lem_in;
 
-    if (!check_arguments(argc, argv[1]))
+    int win_mode = 0;
+    char *map_file = NULL;
+
+    if (argc < 2 || argc > 3) {
+        print_error("Usage: ./lem-in [file] [--win]\n");
+        return (EXIT_FAILURE);
+    }
+
+    if (argc == 3) {
+        if (ft_strncmp(argv[2], "--win", 5) == 0)
+            win_mode = 1;
+        else {
+            print_error("Usage: ./lem-in [file] [--win]\n--win: execute with graphical window.\n");
+            return (EXIT_FAILURE);
+        }
+    }
+    map_file = argv[1];
+
+    if (!check_extension(map_file))
         return (EXIT_FAILURE);
 
     srand(time(NULL));
-    data = get_data(argv[1]);
+    data = get_data(map_file);
     if (!data)
         return (EXIT_FAILURE);
     lem_in = parse_data(data);
 
-    // display_data(&lem_in);
     algo_manager(&lem_in);
     init_ants(&lem_in);
-    // init_window(argc, argv, lem_in);
-    while (!check_if_all_ants_in_end2(&lem_in))
-        move_ants_manager(&lem_in);
-    
+
+
+    if (win_mode) {
+        init_window(argc, argv, lem_in);
+    } else {
+        while (!check_if_all_ants_in_end2(&lem_in))
+            move_ants_manager(&lem_in);
+    }
+
     free_lem_in(&lem_in);
     return (EXIT_SUCCESS);
 }

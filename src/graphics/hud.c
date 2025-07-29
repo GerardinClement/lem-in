@@ -31,14 +31,14 @@ void display_room_info(t_room room)
 {
 	char buffer[50];
 	sprintf(buffer, "Salle %s Cost: %d", room.name, room.cost);
-	render_text(WIDTH - (WIDTH / 8), HEIGHT - (HEIGHT / 10), buffer);
+	render_text(WIDTH - (WIDTH / 5), HEIGHT - (HEIGHT / 10), buffer);
 }
 
 void display_ant_info(t_ant ant) 
 {
 	char buffer[50];
-	sprintf(buffer, "Fourmi %d dans la salle %s", ant.id, ant.room->name);
-	render_text(WIDTH - (WIDTH / 8), HEIGHT - (HEIGHT / 20), buffer);
+	sprintf(buffer, "Ant %d in room %s follow path: %d", ant.id, ant.room->name, ant.path_id);
+	render_text(WIDTH - (WIDTH / 4), HEIGHT - (HEIGHT / 20), buffer);
 	display_room_info(*ant.room);
 }
 
