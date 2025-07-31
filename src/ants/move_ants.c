@@ -1,7 +1,7 @@
 #include "lem_in.h"
 
 static void     move_ants(t_lem_in *lem_in);
-// static void     write_ant_move(int ant_id, char *room_name);
+static void     write_ant_move(int ant_id, char *room_name);
 static t_room   *get_next_room(t_lem_in *lem_in, t_ant *ant);
 
 
@@ -29,9 +29,9 @@ static void    move_ants(t_lem_in *lem_in)
         next_room->is_empty = false;
         ants[i].room = next_room;
         ants[i].current_path_pos--;
-        // write_ant_move(ants[i].id, next_room->name);
+        write_ant_move(ants[i].id, next_room->name);
     }
-    // ft_printf("\n");
+    ft_printf("\n");
 }
 
 
@@ -51,7 +51,7 @@ static t_room   *get_next_room(t_lem_in *lem_in, t_ant *ant)
 }
 
 
-// static void write_ant_move(int ant_id, char *room_name)
-// {
-//     ft_printf("L%d-%s ", ant_id, room_name);
-// }
+static void write_ant_move(int ant_id, char *room_name)
+{
+    ft_printf("L%d-%s ", ant_id, room_name);
+}
