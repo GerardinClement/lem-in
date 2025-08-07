@@ -68,15 +68,15 @@ int main(int argc, char **argv)
     lem_in = parse_data(data);
 
     algo_manager(&lem_in);
-    init_ants(&lem_in);
+    // init_ants(&lem_in);
 
 
-    if (win_mode) {
-        init_window(argc, argv, lem_in);
-    } else {
-        while (!check_if_all_ants_in_end2(&lem_in))
-            move_ants_manager(&lem_in);
-    }
+    // if (win_mode) {
+    //     init_window(argc, argv, lem_in);
+    // } else {
+    //     while (!check_if_all_ants_in_end2(&lem_in))
+    //         move_ants_manager(&lem_in);
+    // }
 
     // free_lem_in(&lem_in);
     return (EXIT_SUCCESS);

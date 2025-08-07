@@ -1,12 +1,14 @@
 #include "lem_in.h"
 
 static void         calculate_all_rooms_cost(t_lem_in *lem_in);
-static int          *reach_path(t_lem_in lem_in, t_room *room);
+static int          *reach_path(t_lem_in lem_in, t_room *room, int *visited);
 static size_t       compute_distribution(t_lem_in *lem_in);
 static void         backtracking_path(t_lem_in *lem_in, int *visited, t_path *path);
 static void         augment_flow(t_lem_in *lem_in, int *visited, int start, int end);
 
-const int NOT_VISITED = -1;
+const int NOT_VISITED = 0;
+const int NO_PARENT = -1;
+const int VISITED = 1;
 const int START = -2;
 
 
@@ -15,7 +17,14 @@ static void init_visited(int *visited, int n_rooms)
     for (int i = 0; i < n_rooms; i++)
     {
         visited[i] = NOT_VISITED;
-        // printf("visited[%d] = %d\n", i, visited[i]);
+    }
+}
+
+static void init_parent(int *parent, int n_rooms)
+{
+    for (int i = 0; i < n_rooms; i++)
+    {
+        parent[i] = NO_PARENT;
     }
 }
 
@@ -27,23 +36,34 @@ void    algo_manager(t_lem_in *lem_in)
 static int edmonds_karp(t_lem_in *lem_in) {
     int max_flow = 0;
     int *visited;
+    int *parent;
     t_room *room = &lem_in->rooms[lem_in->start];
     lem_in->n_paths = 0;
     // printf("Edmonds-Karp algorithm started.\n");
 
+    visited = malloc(sizeof(int) * lem_in->n_rooms);
+    if (!visited) {
+        perror("Failed to allocate memory for visited array");
+        exit(EXIT_FAILURE);
+    }
     while (1) {
-        visited = reach_path(*lem_in, room);
-        if (!visited)
+        init_visited(visited, lem_in->n_rooms);
+        parent = reach_path(*lem_in, room, visited);
+        if (!parent)
             break;
 
-        backtracking_path(lem_in, visited, &lem_in->all_paths[max_flow]);
-        augment_flow(lem_in, visited, lem_in->start, lem_in->end);
+        for (int i = 0; i < lem_in->n_rooms; i++) {
+            printf("Parent[%d] = %d\n", i, parent[i]);
+        }
+        backtracking_path(lem_in, parent, &lem_in->all_paths[max_flow]);
+        augment_flow(lem_in, parent, lem_in->start, lem_in->end);
         max_flow++;
     }
     
     // for (int i = 0; i < max_flow; i++) {
     //     printf("1: Path %d: size: %ld\n", i + 1, lem_in->all_paths[i].size);
     // }
+    printf("Max flow: %d\n", max_flow);
     return max_flow;
 }
 
@@ -97,37 +117,35 @@ static size_t compute_distribution(t_lem_in *lem_in) {
 }
 
 
-static void backtracking_path(t_lem_in *lem_in, int *visited, t_path *path) {
-    int     prev_node = visited[lem_in->end];
+static void backtracking_path(t_lem_in *lem_in, int *parent, t_path *path) {
+    int     prev_node = parent[lem_in->end];
     int     i = 0;
 
-    // lem_in->rooms[prev_node].ignored = 1;
-
     while (prev_node != START) {
-        if (prev_node == NOT_VISITED) {
-            print_error("No path found from start to end.\n");
+        if (prev_node == NO_PARENT) {
+            printf("No path found from start to end. room %d\n", lem_in->rooms[prev_node].id);
             return; //TODO gestion de cette erreur
         }
         t_room *room = &lem_in->rooms[prev_node];
         int current_id = room->id;
-        prev_node = visited[current_id];
+        prev_node = parent[current_id];
         i++;
     }
 
     int *tmp_path = malloc(sizeof(int) * (i + 2));
     if (tmp_path == NULL) {
         print_error("Memory allocation failed.\n");
-        free(visited);
+        free(parent);
         return;
     }
-    
-    prev_node = visited[lem_in->end];
+
+    prev_node = parent[lem_in->end];
 
     tmp_path[0] = 1;
     for (int j = 1; j < i; j++)
     {
         tmp_path[j] = lem_in->rooms[prev_node].id;
-        prev_node = visited[tmp_path[j]];
+        prev_node = parent[tmp_path[j]];
     }
 
     path->size = i;
@@ -159,7 +177,7 @@ static void calculate_all_rooms_cost(t_lem_in *lem_in)
     int T = compute_distribution(lem_in);
     printf("T = %d\n", T);
     for (int i = 0; i < lem_in->n_paths; i++) {
-        printf("Path %d: size: %ld, distribution: %d", i + 1, lem_in->all_paths[i].size, lem_in->all_paths[i].distribution);
+        printf("Path %d: size: %ld, distribution: %d, path: ", i + 1, lem_in->all_paths[i].size, lem_in->all_paths[i].distribution);
         for (size_t j = 0; j < lem_in->all_paths[i].size; j++) {
             printf(" %d", lem_in->all_paths[i].path[j]);
         }
@@ -172,57 +190,56 @@ static void augment_flow(t_lem_in *lem_in, int *visited, int start, int end) {
     while (curr != start) {
         int prev = visited[curr];
 
+        printf("Augmenting flow from %d to %d\n", prev, curr);
         t_edge *e = find_edge(lem_in->rooms[prev].edges, lem_in->rooms[prev].n_edges, curr);
-        e->capacity--;
         e->flow++;
-
-        e->rev->capacity++;
-        e->rev->flow--;
-        // e->rev->is_empty = true;
+        e->rev->capacity = e->capacity - e->flow;
 
         curr = prev;
     }
 }
 
 
-static void look_neighbors(t_room *room, int *visited, t_queue *queue)
+static void look_neighbors(t_room *room, int *parent, int *visited, t_queue *queue)
 {
     for (size_t i = 0; i < room->n_edges; i++)
     {
         t_edge *next_edge = &room->edges[i];
         int room_index = next_edge->to;
 
-        if (visited[room_index] == NOT_VISITED && next_edge->capacity > 0) {
-            visited[room_index] = room->id;
+        if (next_edge->capacity > next_edge->flow && visited[room_index] == NOT_VISITED) {
+            parent[room_index] = room->id;
+            visited[room_index] = VISITED;
             enqueue(queue, room_index);
         }
     }
 }
 
 
-static int *reach_path(t_lem_in lem_in, t_room *room)
+static int *reach_path(t_lem_in lem_in, t_room *room, int *visited)
 {
     t_queue     *queue;
-    int         *visited;
+    int         *parent;
     int         current_node;
     int         target_node;
 
-    visited = malloc(sizeof(int) * lem_in.n_rooms);
-    if (!visited) {
-        perror("Failed to allocate memory for visited array");
-        exit(EXIT_FAILURE);
-    }
-    
-    init_visited(visited, lem_in.n_rooms);
-    visited[lem_in.start] = START;
+
     target_node = lem_in.end;
     queue = malloc(sizeof(t_queue));
-    
     if (!queue) {
         perror("Failed to allocate memory for queue");
         free(visited);
         exit(EXIT_FAILURE);
     }
+    parent = malloc(sizeof(int) * lem_in.n_rooms);
+    if (!parent) {
+        perror("Failed to allocate memory for parent array");
+        free(visited);
+        free(queue);
+        exit(EXIT_FAILURE);
+    }
+    init_parent(parent, lem_in.n_rooms);
+    parent[lem_in.start] = START;
     init_queue(queue);
     enqueue(queue, room->id);
     
@@ -233,10 +250,10 @@ static int *reach_path(t_lem_in lem_in, t_room *room)
             break;
         if (current_node == target_node)
             break;
-        look_neighbors(&lem_in.rooms[current_node], visited, queue);
+        look_neighbors(&lem_in.rooms[current_node], parent, visited, queue);
     }
 
-    if (visited[target_node] == NOT_VISITED) {
+    if (parent[target_node] == NO_PARENT) {
         free(visited);
         free(queue);
         return NULL;
@@ -244,5 +261,5 @@ static int *reach_path(t_lem_in lem_in, t_room *room)
 
     destroy_queue(queue);
     free(queue);
-    return visited;
+    return parent;
 }

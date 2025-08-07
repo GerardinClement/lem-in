@@ -52,5 +52,6 @@ t_edge *find_edge(t_edge *edges, size_t n_edges, int to)
             return &edges[i];
         i++;
     }
+    printf("Edge to room %d not found. n_edges: %zu\n", to, n_edges);
     return NULL;
 }
