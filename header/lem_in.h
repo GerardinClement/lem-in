@@ -19,6 +19,7 @@
 # include "graphics.h"
 # include "algo.h"
 # include "queue.h"
+# include "edge.h"
 
 # define NUM_POINTS 100
 # include "ants.h"

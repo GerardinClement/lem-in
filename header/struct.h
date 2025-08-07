@@ -24,6 +24,15 @@ typedef struct s_array
     size_t      size;
 }               t_array;
 
+typedef struct s_edge
+{
+    int                 to;
+    size_t              size;
+    int                 is_empty;
+    // struct s_edge      *rev;
+    struct s_edge      *edges;
+}                       t_edge;
+
 typedef struct s_room
 {
     int         id;
@@ -34,6 +43,10 @@ typedef struct s_room
     int         cost;
     int         visited;
     int         ignored;
+
+    t_edge      *edges;
+    size_t      n_edges;
+
 }               t_room;
 
 typedef struct s_node

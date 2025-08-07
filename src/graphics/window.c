@@ -10,7 +10,7 @@ int         size = 0;
 int         ants_size = 0;
 bool        esc_is_pressed = false;
 bool        paused = false;
-float       g_window_speed = 1;
+float       g_window_speed = 0;
 
 
 static void     keyboard_listener(unsigned char key, int x, int y);
@@ -84,10 +84,9 @@ void init_rooms(t_lem_in lem_in) {
         rooms[i].pos.x = lem_in.rooms[i].pos.x;
         rooms[i].pos.y = lem_in.rooms[i].pos.y;
         rooms[i].pos.z = lem_in.rooms[i].pos.z;
-        rooms[i].links_size = get_links_size(lem_in.rooms[i].links);
+        rooms[i].links_size = lem_in.rooms[i].n_edges;
         rooms[i].links = get_links(lem_in, lem_in.rooms[i].links, rooms[i].links_size);
 
-        // Start et End gardent leur couleur spéciale
         if (i == lem_in.end) {
             rooms[i].color = (t_color){1.0, 0.0, 0.0, 1.0};
             continue;
@@ -96,7 +95,6 @@ void init_rooms(t_lem_in lem_in) {
             continue;
         }
 
-        // Cherche si la room appartient à un path
         int found = 0;
         for (int p = 0; p < lem_in.n_paths; p++) {
             for (size_t j = 0; j < lem_in.all_paths[p].size; j++) {
@@ -108,7 +106,6 @@ void init_rooms(t_lem_in lem_in) {
             }
             if (found) break;
         }
-        // Si la room n'est dans aucun path, couleur grise
         if (!found)
             rooms[i].color = (t_color){0.5, 0.5, 0.5, 1.0};
     }

@@ -29,14 +29,14 @@ void rotate_camera(int x, int y)
 	float radius = 20.0f;
 	rotation_angle += x * 0.01f;
     vertical_angle += y * 0.01f;
-	if (rotation_angle > 2 * pi) {
-		rotation_angle -= 2 * pi;
+	if (rotation_angle > 2 * M_PI) {
+		rotation_angle -= 2 * M_PI;
 	} else if (rotation_angle < 0) {
-		rotation_angle += 2 * pi;
+		rotation_angle += 2 * M_PI;
 	}
 
-    if (vertical_angle > 2 * pi) {
-        vertical_angle -= 2 * pi;
+    if (vertical_angle > 2 * M_PI) {
+        vertical_angle -= 2 * M_PI;
     }
 
 	camera.eye.x = camera.center.x + radius * cos(rotation_angle);

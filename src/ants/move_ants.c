@@ -21,8 +21,11 @@ static void    move_ants(t_lem_in *lem_in)
         if (ants[i].room->id == lem_in->end)
             continue;
         next_room = get_next_room(lem_in, &ants[i]);
-        if (next_room->is_empty == false && next_room->id != lem_in->end)
+        if (next_room->is_empty == false && next_room->id != lem_in->end) {
+            // if (next_room->is_empty == false)
+            //     printf("Error: Room %s is not empty, cannot move ant %d\n", next_room->name, ants[i].id);
             continue;
+        }
         if (next_room->id == ants[i].room->id)
             continue;
         ants[i].room->is_empty = true;
@@ -53,5 +56,7 @@ static t_room   *get_next_room(t_lem_in *lem_in, t_ant *ant)
 
 static void write_ant_move(int ant_id, char *room_name)
 {
+    (void)room_name; // To avoid unused parameter warning
+    (void)ant_id; // To avoid unused parameter warning
     ft_printf("L%d-%s ", ant_id, room_name);
 }

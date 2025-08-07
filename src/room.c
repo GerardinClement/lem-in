@@ -9,6 +9,8 @@ void set_room(t_room *room, int id, char *name, t_vector3 pos)
     room->links = NULL;
     room->cost = 0;
     room->ignored = 0;
+    room->edges = NULL;
+    room->n_edges = 0;
 }
 
 bool check_if_room_exist(t_lem_in *lem_in, char *room_name)

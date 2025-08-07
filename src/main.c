@@ -41,6 +41,8 @@ int main(int argc, char **argv)
     int win_mode = 0;
     char *map_file = NULL;
 
+    (void)win_mode;
+
     if (argc < 2 || argc > 3) {
         print_error("Usage: ./lem-in [file] [--win]\n");
         return (EXIT_FAILURE);
@@ -76,6 +78,6 @@ int main(int argc, char **argv)
             move_ants_manager(&lem_in);
     }
 
-    free_lem_in(&lem_in);
+    // free_lem_in(&lem_in);
     return (EXIT_SUCCESS);
 }

@@ -63,6 +63,7 @@ int get_links_size(int *links)
 	int i;
 
 	i = 0;
+    // printf("get_links_size: %p\n", links);
 
 	while (links && links[i] != -1)
 		i++;

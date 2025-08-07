@@ -109,6 +109,8 @@ void parse_rooms(t_lem_in *lem_in, t_array *data)
             fatal_errors_handler(lem_in, "Room already exist.\n", data);
         }
         set_room(&lem_in->rooms[id], id, room_name, room_pos);
+        // printf("Room[%d]: %s at (%f, %f, %f)\n", lem_in->rooms[id].id, lem_in->rooms[id].name, 
+        //        lem_in->rooms[id].pos.x, lem_in->rooms[id].pos.y, lem_in->rooms[id].pos.z);
         if (check_if_command(data->arr[*i - 1]))
             set_command(lem_in, data->arr[*i - 1], id);
         id++;

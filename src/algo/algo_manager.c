@@ -3,15 +3,50 @@
 static void         calculate_all_rooms_cost(t_lem_in *lem_in);
 static int          *reach_path(t_lem_in lem_in, t_room *room);
 static size_t       compute_distribution(t_lem_in *lem_in);
+static void         backtracking_path(t_lem_in *lem_in, int *visited, t_path *path);
+static void         augment_flow(t_lem_in *lem_in, int *visited, int start, int end);
 
 const int NOT_VISITED = -1;
 const int START = -2;
 
 
+static void init_visited(int *visited, int n_rooms)
+{
+    for (int i = 0; i < n_rooms; i++)
+    {
+        visited[i] = NOT_VISITED;
+        // printf("visited[%d] = %d\n", i, visited[i]);
+    }
+}
+
 void    algo_manager(t_lem_in *lem_in)
 {
     calculate_all_rooms_cost(lem_in);
 }
+
+static int edmonds_karp(t_lem_in *lem_in) {
+    int max_flow = 0;
+    int *visited;
+    t_room *room = &lem_in->rooms[lem_in->start];
+    lem_in->n_paths = 0;
+    // printf("Edmonds-Karp algorithm started.\n");
+
+    while (1) {
+        visited = reach_path(*lem_in, room);
+        if (!visited)
+            break;
+
+        backtracking_path(lem_in, visited, &lem_in->all_paths[max_flow]);
+        augment_flow(lem_in, visited, lem_in->start, lem_in->end);
+        max_flow++;
+    }
+    
+    // for (int i = 0; i < max_flow; i++) {
+    //     printf("1: Path %d: size: %ld\n", i + 1, lem_in->all_paths[i].size);
+    // }
+    return max_flow;
+}
+
 
 static size_t compute_distribution(t_lem_in *lem_in) {
     size_t T;
@@ -66,19 +101,20 @@ static void backtracking_path(t_lem_in *lem_in, int *visited, t_path *path) {
     int     prev_node = visited[lem_in->end];
     int     i = 0;
 
-    lem_in->rooms[prev_node].ignored = 1;
+    // lem_in->rooms[prev_node].ignored = 1;
 
     while (prev_node != START) {
         if (prev_node == NOT_VISITED) {
             print_error("No path found from start to end.\n");
-            return;
+            return; //TODO gestion de cette erreur
         }
-        int current_id = lem_in->rooms[prev_node].id;
+        t_room *room = &lem_in->rooms[prev_node];
+        int current_id = room->id;
         prev_node = visited[current_id];
         i++;
     }
 
-    int     *tmp_path = malloc(sizeof(int) * (i + 2));
+    int *tmp_path = malloc(sizeof(int) * (i + 2));
     if (tmp_path == NULL) {
         print_error("Memory allocation failed.\n");
         free(visited);
@@ -96,85 +132,68 @@ static void backtracking_path(t_lem_in *lem_in, int *visited, t_path *path) {
 
     path->size = i;
     path->path = tmp_path;
-    free(visited);
+    // free(visited);
 }
 
 static void calculate_all_rooms_cost(t_lem_in *lem_in) 
 {
-    t_room      *room;
-    int         i = 0;
-    int         *visited;
-
     lem_in->all_paths = malloc(sizeof(t_path) * lem_in->n_rooms);
     
-    room = &lem_in->rooms[lem_in->start];
     if (!lem_in->all_paths) {
         perror("Failed to allocate memory for all_paths");
         exit(EXIT_FAILURE);
     }
-    do {
-        visited = reach_path(*lem_in, room);
-        if (visited == NULL) {
-            // printf("No path found from start to end.\n");
-            break;
-        }
-        backtracking_path(lem_in, visited, &lem_in->all_paths[i]);
-        i++;
-    } while (visited != NULL);
+    int max_flow = edmonds_karp(lem_in);
 
-    lem_in->n_paths = i;
-        
-    lem_in->all_paths[i].size = -1;
+    // printf("Max flow: %d\n", max_flow);
 
-    int     *distribution = malloc(sizeof(int) * i);
+    lem_in->n_paths = max_flow;
+    lem_in->all_paths[max_flow].size = -1;
 
-    if (!distribution) {
-        perror("Failed to allocate memory for distribution");
-        free(lem_in->all_paths);
-        exit(EXIT_FAILURE);
-    }
-    free(distribution);
-    free(visited);
     compute_distribution(lem_in);
+    // printf("T = %d\n", T);
+    // for (int i = 0; i < lem_in->n_paths; i++) {
+    //     printf("Path %d: size: %ld, distribution: %d", i + 1, lem_in->all_paths[i].size, lem_in->all_paths[i].distribution);
+    //     for (size_t j = 0; j < lem_in->all_paths[i].size; j++) {
+    //         printf(" %d", lem_in->all_paths[i].path[j]);
+    //     }
+    //     printf("\n");
+    // }
 }
 
-static void look_neighbors(t_lem_in lem_in, t_room *room, int *visited, t_queue *queue)
+static void augment_flow(t_lem_in *lem_in, int *visited, int start, int end) {
+    int curr = end;
+    while (curr != start) {
+        int prev = visited[curr];
+
+        t_edge *e = find_edge(lem_in->rooms[prev].edges, lem_in->rooms[prev].n_edges, curr);
+        e->is_empty = false;
+        // e->rev->is_empty = true;
+
+        curr = prev;
+    }
+}
+
+
+static void look_neighbors(t_room *room, int *visited, t_queue *queue)
 {
-    int     links_size;
     int     room_index;
+    t_edge  *next_edge;
 
-    links_size = 0;
     room_index = 0;
-    
-    if (room && room->links)
-        links_size = get_links_size(room->links);
-    
-    for (int i = 0; i < links_size; i++)
-    {
-        room_index = room->links[i];
-        
-        if (room_index < 0 || room_index >= lem_in.n_rooms) {
-            printf("Error: Invalid room index %d\n", room_index);
-            continue;
-        }
 
-        t_room neighbors = lem_in.rooms[room_index];
-        
-        if (visited[room_index] == NOT_VISITED && !neighbors.ignored) {
+    for (size_t i = 0; i < room->n_edges; i++)
+    {
+        next_edge = &room->edges[i];
+        room_index = next_edge->to;
+
+        if (visited[room_index] == NOT_VISITED && next_edge->is_empty) {
             visited[room_index] = room->id;
             enqueue(queue, room_index);
         }
     }
 }
 
-static void init_visited(int *visited, int n_rooms)
-{
-    for (int i = 0; i < n_rooms; i++)
-    {
-        visited[i] = NOT_VISITED;
-        // printf("visited[%d] = %d\n", i, visited[i]);
-    }
-}
 
 static int *reach_path(t_lem_in lem_in, t_room *room)
 {
@@ -209,7 +228,7 @@ static int *reach_path(t_lem_in lem_in, t_room *room)
             break;
         if (current_node == target_node)
             break;
-        look_neighbors(lem_in, &lem_in.rooms[current_node], visited, queue);
+        look_neighbors(&lem_in.rooms[current_node], visited, queue);
     }
 
     if (visited[target_node] == NOT_VISITED) {
