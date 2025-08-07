@@ -146,19 +146,25 @@ static void calculate_all_rooms_cost(t_lem_in *lem_in)
     int max_flow = edmonds_karp(lem_in);
 
     // printf("Max flow: %d\n", max_flow);
+    if (max_flow <= 0) {
+        print_error("No paths found from start to end.\n");
+        free(lem_in->all_paths);
+        lem_in->all_paths = NULL;
+        exit(EXIT_FAILURE);
+    }
 
     lem_in->n_paths = max_flow;
     lem_in->all_paths[max_flow].size = -1;
 
-    compute_distribution(lem_in);
-    // printf("T = %d\n", T);
-    // for (int i = 0; i < lem_in->n_paths; i++) {
-    //     printf("Path %d: size: %ld, distribution: %d", i + 1, lem_in->all_paths[i].size, lem_in->all_paths[i].distribution);
-    //     for (size_t j = 0; j < lem_in->all_paths[i].size; j++) {
-    //         printf(" %d", lem_in->all_paths[i].path[j]);
-    //     }
-    //     printf("\n");
-    // }
+    int T = compute_distribution(lem_in);
+    printf("T = %d\n", T);
+    for (int i = 0; i < lem_in->n_paths; i++) {
+        printf("Path %d: size: %ld, distribution: %d", i + 1, lem_in->all_paths[i].size, lem_in->all_paths[i].distribution);
+        for (size_t j = 0; j < lem_in->all_paths[i].size; j++) {
+            printf(" %d", lem_in->all_paths[i].path[j]);
+        }
+        printf("\n");
+    }
 }
 
 static void augment_flow(t_lem_in *lem_in, int *visited, int start, int end) {
@@ -167,7 +173,11 @@ static void augment_flow(t_lem_in *lem_in, int *visited, int start, int end) {
         int prev = visited[curr];
 
         t_edge *e = find_edge(lem_in->rooms[prev].edges, lem_in->rooms[prev].n_edges, curr);
-        e->is_empty = false;
+        e->capacity--;
+        e->flow++;
+
+        e->rev->capacity++;
+        e->rev->flow--;
         // e->rev->is_empty = true;
 
         curr = prev;
@@ -177,17 +187,12 @@ static void augment_flow(t_lem_in *lem_in, int *visited, int start, int end) {
 
 static void look_neighbors(t_room *room, int *visited, t_queue *queue)
 {
-    int     room_index;
-    t_edge  *next_edge;
-
-    room_index = 0;
-
     for (size_t i = 0; i < room->n_edges; i++)
     {
-        next_edge = &room->edges[i];
-        room_index = next_edge->to;
+        t_edge *next_edge = &room->edges[i];
+        int room_index = next_edge->to;
 
-        if (visited[room_index] == NOT_VISITED && next_edge->is_empty) {
+        if (visited[room_index] == NOT_VISITED && next_edge->capacity > 0) {
             visited[room_index] = room->id;
             enqueue(queue, room_index);
         }

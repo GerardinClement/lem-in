@@ -28,8 +28,9 @@ typedef struct s_edge
 {
     int                 to;
     size_t              size;
-    int                 is_empty;
-    // struct s_edge      *rev;
+    int                 capacity;
+    int                 flow;
+    struct s_edge      *rev;
     struct s_edge      *edges;
 }                       t_edge;
 
