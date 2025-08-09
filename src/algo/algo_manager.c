@@ -33,6 +33,23 @@ void    algo_manager(t_lem_in *lem_in)
     calculate_all_rooms_cost(lem_in);
 }
 
+int check_if_path_is_disjoint(t_lem_in *lem_in, t_path *path, int n_paths)
+{
+    for (int i = 0; i < n_paths; i++) {
+        for (size_t j = 0; j < path->size; j++) {
+            int room_id = path->path[j];
+            if (room_id == 1) // skip start room if needed
+                continue;
+            for (size_t k = 0; k < lem_in->all_paths[i].size; k++) {
+                if (lem_in->all_paths[i].path[k] == room_id && room_id != 1) {
+                    return room_id;
+                }
+            }
+        }
+    }
+    return 0;
+}
+
 static int edmonds_karp(t_lem_in *lem_in) {
     int max_flow = 0;
     int *visited;
@@ -51,11 +68,18 @@ static int edmonds_karp(t_lem_in *lem_in) {
         parent = reach_path(*lem_in, room, visited);
         if (!parent)
             break;
-
-        for (int i = 0; i < lem_in->n_rooms; i++) {
-            printf("Parent[%d] = %d\n", i, parent[i]);
-        }
+            
+            // for (int i = 0; i < lem_in->n_rooms; i++) {
+                //     printf("Parent[%d] = %d\n", i, parent[i]);
+                // }
         backtracking_path(lem_in, parent, &lem_in->all_paths[max_flow]);
+        int room_shared = check_if_path_is_disjoint(lem_in, &lem_in->all_paths[max_flow], max_flow);
+        if (room_shared) {
+            // printf("Path %d is not disjoint, room %d is shared.\n", max_flow + 1, room_shared);
+            lem_in->rooms[room_shared].ignored = true;
+            lem_in->all_paths[max_flow].size = -1;
+            continue;
+        }
         augment_flow(lem_in, parent, lem_in->start, lem_in->end);
         max_flow++;
     }
@@ -63,7 +87,7 @@ static int edmonds_karp(t_lem_in *lem_in) {
     // for (int i = 0; i < max_flow; i++) {
     //     printf("1: Path %d: size: %ld\n", i + 1, lem_in->all_paths[i].size);
     // }
-    printf("Max flow: %d\n", max_flow);
+    // printf("Max flow: %d\n", max_flow);
     return max_flow;
 }
 
@@ -174,15 +198,15 @@ static void calculate_all_rooms_cost(t_lem_in *lem_in)
     lem_in->n_paths = max_flow;
     lem_in->all_paths[max_flow].size = -1;
 
-    int T = compute_distribution(lem_in);
-    printf("T = %d\n", T);
-    for (int i = 0; i < lem_in->n_paths; i++) {
-        printf("Path %d: size: %ld, distribution: %d, path: ", i + 1, lem_in->all_paths[i].size, lem_in->all_paths[i].distribution);
-        for (size_t j = 0; j < lem_in->all_paths[i].size; j++) {
-            printf(" %d", lem_in->all_paths[i].path[j]);
-        }
-        printf("\n");
-    }
+    compute_distribution(lem_in);
+    // printf("T = %d\n", T);
+    // for (int i = 0; i < lem_in->n_paths; i++) {
+    //     printf("Path %d: size: %ld, distribution: %d, path: ", i + 1, lem_in->all_paths[i].size, lem_in->all_paths[i].distribution);
+    //     for (size_t j = 0; j < lem_in->all_paths[i].size; j++) {
+    //         printf(" %d", lem_in->all_paths[i].path[j]);
+    //     }
+    //     printf("\n");
+    // }
 }
 
 static void augment_flow(t_lem_in *lem_in, int *visited, int start, int end) {
@@ -190,7 +214,6 @@ static void augment_flow(t_lem_in *lem_in, int *visited, int start, int end) {
     while (curr != start) {
         int prev = visited[curr];
 
-        printf("Augmenting flow from %d to %d\n", prev, curr);
         t_edge *e = find_edge(lem_in->rooms[prev].edges, lem_in->rooms[prev].n_edges, curr);
         e->flow++;
         e->rev->capacity = e->capacity - e->flow;
@@ -202,6 +225,8 @@ static void augment_flow(t_lem_in *lem_in, int *visited, int start, int end) {
 
 static void look_neighbors(t_room *room, int *parent, int *visited, t_queue *queue)
 {
+    if (room->ignored)
+        return;
     for (size_t i = 0; i < room->n_edges; i++)
     {
         t_edge *next_edge = &room->edges[i];

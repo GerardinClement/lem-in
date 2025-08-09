@@ -68,15 +68,23 @@ int main(int argc, char **argv)
     lem_in = parse_data(data);
 
     algo_manager(&lem_in);
-    // init_ants(&lem_in);
-
-
-    // if (win_mode) {
-    //     init_window(argc, argv, lem_in);
-    // } else {
-    //     while (!check_if_all_ants_in_end2(&lem_in))
-    //         move_ants_manager(&lem_in);
+    // for (int i = 0; i < lem_in.n_rooms; i++) {
+    //     printf("Room %d: %s\n", lem_in.rooms[i].id, lem_in.rooms[i].name);
+    //     printf("Edges: ");
+    //     for (size_t j = 0; j < lem_in.rooms[i].n_edges; j++) {
+    //         printf("%d ", lem_in.rooms[i].edges[j].to);
+    //     }
+    //     printf("\n");
     // }
+    init_ants(&lem_in);
+
+
+    if (win_mode) {
+        init_window(argc, argv, lem_in);
+    } else {
+        while (!check_if_all_ants_in_end2(&lem_in))
+            move_ants_manager(&lem_in);
+    }
 
     // free_lem_in(&lem_in);
     return (EXIT_SUCCESS);
